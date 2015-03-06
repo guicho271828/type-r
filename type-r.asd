@@ -21,7 +21,7 @@
   :description "Collections of Accessor Functions and Patterns to Handle Compound Types"
   :mailto "guicho2.71828@gmail.com"
   :license "LLGPL"
-  :depends-on (:optima :alexandria :introspect-environment)
+  :depends-on (:optima :alexandria)
   :pathname "src/"
   :components ((:file "binding-pattern")
                (:file "package")

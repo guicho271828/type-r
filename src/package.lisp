@@ -5,7 +5,7 @@
 
 (in-package :cl-user)
 (defpackage type-r
-  (:use :cl :optima :alexandria :iterate
+  (:use :cl :optima :alexandria
         :binding-pattern))
 (in-package :type-r)
 
