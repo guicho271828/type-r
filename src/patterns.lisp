@@ -140,82 +140,88 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 ;;;; arrays
 
-(defpattern-with-accessors string-type (dimensions element-type)
-  (make-types-matcher 'string `((,dimensions *)) `((,element-type character))))
+(defpattern-with-accessors string-type (size element-type)
+  (make-types-matcher 'string `((,size *)) `((,element-type character))))
 
-(defpattern-with-accessors simple-string-type (dimensions element-type)
-  (make-types-matcher 'simple-string `((,dimensions *)) `((,element-type character))))
+(defpattern-with-accessors simple-string-type (size element-type)
+  (make-types-matcher 'simple-string `((,size *)) `((,element-type character))))
 
-(defpattern-with-accessors simple-vector-type (dimensions element-type)
-  (make-types-matcher 'simple-vector `((,dimensions *)) `((,element-type *))))
+(defpattern-with-accessors base-string-type (size element-type)
+  (make-types-matcher 'base-string `((,size *)) `((,element-type base-char))))
+(defpattern-with-accessors simple-base-string-type (size element-type)
+  (make-types-matcher 'simple-base-string `((,size *)) `((,element-type base-char))))
 
-(defpattern-with-accessors vector-type (dimensions element-type)
-  (make-types-matcher 'vector `((,element-type *) (,dimensions *))))
+(defpattern-with-accessors vector-type (size element-type)
+  (make-types-matcher 'vector `((,element-type *) (,size *))))
 
-(defpattern-with-accessors raw-array-type (dimensions element-type)
+(defpattern-with-accessors simple-vector-type (size element-type)
+  (make-types-matcher 'simple-vector `((,size *)) `((,element-type *))))
+
+
+(defpattern-with-accessors array-type (element-type dimensions)
   (make-types-matcher 'array `((,element-type *) (,dimensions *))))
 
-(defpattern-with-accessors simple-array-type (dimensions element-type)
+(defpattern-with-accessors simple-array-type (element-type dimensions)
   (make-types-matcher 'simple-array `((,element-type *) (,dimensions *))))
 
-(defpattern-with-accessors bit-vector-type (dimensions element-type)
-  (make-types-matcher 'bit-vector `((,dimensions *)) `((,element-type bit))))
+(defpattern-with-accessors bit-vector-type (size element-type)
+  (make-types-matcher 'bit-vector `((,size *)) `((,element-type bit))))
 
-(defpattern-with-accessors simple-bit-vector-type (dimensions element-type)
-  (make-types-matcher 'simple-bit-vector `((,dimensions *)) `((,element-type bit))))
+(defpattern-with-accessors simple-bit-vector-type (size element-type)
+  (make-types-matcher 'simple-bit-vector `((,size *)) `((,element-type bit))))
 
-;; now try this out!
-#+nil
-(mapcar (lambda (type)
-          (print (optima.core:pattern-expand-1 `(,type DIMENSIONSX ELEMY))))
-        '(string-type
-          simple-string-type
-          simple-vector-type
-          vector-type
-          array-type
-          simple-array-type
-          bit-vector-type
-          simple-bit-vector-type))
 
-(defpattern-with-accessors general-string-type (dimensions element-type)
-  `(or (string-type            ,dimensions ,element-type)
-       (simple-string-type     ,dimensions ,element-type)))
+;;;; general
+(defpattern-with-accessors general-base-string-type (size element-type)
+  `(or (base-string-type            ,size ,element-type)
+       (simple-base-string-type     ,size ,element-type)))
 
-(defpattern-with-accessors general-vector-type (dimensions element-type)
-  `(or (vector-type            ,dimensions ,element-type)
-       (simple-vector-type     ,dimensions ,element-type)))
+(defpattern-with-accessors general-string-type (size element-type)
+  `(or (base-string-type        ,size ,element-type)
+       (string-type             ,size ,element-type)
+       (simple-base-string-type ,size ,element-type)
+       (simple-string-type      ,size ,element-type)))
 
-(defpattern-with-accessors general-bitvector-type (dimensions element-type)
-  `(or (bit-vector-type        ,dimensions ,element-type)
-       (simple-bit-vector-type ,dimensions ,element-type)))
+(defpattern-with-accessors general-vector-type (size element-type)
+  `(or (base-string-type        ,size ,element-type)
+       (string-type             ,size ,element-type)
+       (vector-type             ,size ,element-type)
+       (bit-vector-type         ,size ,element-type)
+       (simple-base-string-type ,size ,element-type)
+       (simple-string-type      ,size ,element-type)
+       (simple-vector-type      ,size ,element-type)
+       (simple-bit-vector-type  ,size ,element-type)))
 
-(defpattern-with-accessors general-simple-array-type (dimensions element-type)
-  `(or (simple-string-type     ,dimensions ,element-type)
-       (simple-vector-type     ,dimensions ,element-type)
-       (simple-array-type      ,dimensions ,element-type)
-       (simple-bit-vector-type ,dimensions ,element-type)))
+(defpattern-with-accessors general-bitvector-type (size element-type)
+  `(or (bit-vector-type        ,size ,element-type)
+       (simple-bit-vector-type ,size ,element-type)))
 
-(defpattern-with-accessors general-array-type (dimensions element-type) 
-  `(or (string-type            ,dimensions ,element-type)
-       (simple-string-type     ,dimensions ,element-type)
-       (simple-vector-type     ,dimensions ,element-type)
-       (vector-type            ,dimensions ,element-type)
-       (raw-array-type         ,dimensions ,element-type)
-       (simple-array-type      ,dimensions ,element-type)
-       (bit-vector-type        ,dimensions ,element-type)
-       (simple-bit-vector-type ,dimensions ,element-type)))
+(defpattern-with-accessors general-simple-array-type (element-type dimensions)
+  `(or (simple-base-string-type ,dimensions ,element-type)
+       (simple-string-type      ,dimensions ,element-type)
+       (simple-vector-type      ,dimensions ,element-type)
+       (simple-bit-vector-type  ,dimensions ,element-type)
+       (simple-array-type       ,dimensions ,element-type)))
 
-(defpattern-with-accessors array-type (dimensions element-type)
-  `(general-array-type ,dimensions ,element-type))
-
+(defpattern-with-accessors general-array-type (element-type dimensions) 
+  `(or (base-string-type        ,dimensions ,element-type)
+       (string-type             ,dimensions ,element-type)
+       (vector-type             ,dimensions ,element-type)
+       (bit-vector-type         ,dimensions ,element-type)
+       (array-type              ,dimensions ,element-type)
+       (simple-base-string-type ,dimensions ,element-type)
+       (simple-string-type      ,dimensions ,element-type)
+       (simple-vector-type      ,dimensions ,element-type)
+       (simple-bit-vector-type  ,dimensions ,element-type)
+       (simple-array-type       ,dimensions ,element-type)))
 
 ;;;; union. intersection, etc.
 
-(defpattern-with-accessors union-type (types)
+(defpattern-with-accessors or-type (types)
   `(list* 'or ,types))
-(defpattern-with-accessors intersection-type (types)
+(defpattern-with-accessors and-type (types)
   `(list* 'and ,types))
-(defpattern-with-accessors negation-type (type)
+(defpattern-with-accessors not-type (type)
   `(list 'not ,type))
 
 ;;;; numeric types
@@ -251,6 +257,10 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
          (and (or 'signed-byte (list 'signed-byte))
               (<> ,high _ '*)
               (<> ,low  _ '*)))))
+
+(defpattern-with-accessors general-byte-type (low high)
+  `(or (unsigned-byte-type ,low ,high)
+       (signed-byte-type ,low ,high)))
 
 (defpattern-with-accessors fixnum-type (low high)
   (make-types-matcher 'fixnum nil `((,low ,MOST-NEGATIVE-FIXNUM)
@@ -295,7 +305,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 (defpattern-with-accessors ratio-type (low high)
   (make-types-matcher 'ratio nil `((,low *) (,high *))))
   
-(defpattern-with-accessors numeric-type (low high)
+(defpattern-with-accessors general-real-type (low high)
   `(or (general-integer-type ,low ,high)
        (general-float-type ,low ,high)
        (real-type ,low ,high)
@@ -320,7 +330,3 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 (defpattern-with-accessors cons-type (car-type cdr-type)
   (make-types-matcher 'cons `((,car-type *) (,cdr-type *))))
 
-
-(defun function-type-primary-value (function-type)
-  "Given a function type, return the type of the function's primary return value."
-  (values-type-primary (function-type-return-type function-type)))
