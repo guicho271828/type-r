@@ -1,7 +1,118 @@
 
 * Type-R 
 
-Not a Honda.
+This library tries to provide a collection of accessor functions for the
+built-in compound types defined in Common Lisp. This was initially a
+re-implementation of Bike/compiler-macro/type-utils.lisp which maintains
+the accessor for each type manually, with lots of /cond/ and
+/case/ statements, while I mostly automated the definition of accessors
+with macros.
+
+c.f. http://www.lispworks.com/documentation/HyperSpec/Body/04_bc.htm
+
+|--------------+--------------+--------------------|
+| and          | long-float   | simple-base-string |
+| array        | member       | simple-bit-vector  |
+| base-string  | mod          | simple-string      |
+| bit-vector   | not          | simple-vector      |
+| complex      | or           | single-float       |
+| cons         | rational     | string             |
+| double-float | real         | unsigned-byte      |
+| eql          | satisfies    | values             |
+| float        | short-float  | vector             |
+| function     | signed-byte  |                    |
+| integer      | simple-array |                    |
+|--------------+--------------+--------------------|
+
+Types covered by this library are shown in the table.
+For a given type specifier /X/, there is a pattern called /X-type/, e.g., for /string/, we
+have a pattern named /string-type/ . The name of a function that
+obtain the /Y/ portion of the given type specifier is named /X-type-Y/,
+e.g., for /size/ portion of /string-type/, we have /string-type-size/.
+
+#+BEGIN_SRC lisp
+
+(match '(string 50)
+ ((string-type size) size)) ; --> 50
+
+(match '(string)
+ ((string-type size) size)) ; --> '*
+
+(match 'string
+ ((string-type size) size)) ; --> '*
+
+(string-type-size '(string 50)) ; --> 50
+(string-type-size '(string))    ; --> '*
+(string-type-size 'string)      ; --> '*
+
+#+END_SRC
+
+Note that the subtype relationship is not considered. For example,
+/array-type/ does not match /simple-array/. Instead, I added
+/general-array-type/ and similar variants that matches all such
+type specifiers.
+
+#+BEGIN_SRC lisp
+; ematch throws an error when no clause matches
+(ematch '(simple-array * 3)
+ ((array-type _ rank) rank)) ; --> error!
+
+(ematch '(simple-array * 3)
+ ((general-array-type _ rank) rank)) ; --> 3
+
+(ematch '(simple-array * (3 2))
+ ((general-array-type _ (list _ column)) column)) ; --> 2
+
+#+END_SRC
+
+For types that are written as "/Compound Type Specifier Kind:
+Specializing./" or "/Compound Type Specifier Kind: Abbreviating./" in CLHS,
+there may be optional parameters to the patterns: For example,
+/simple-string-type/ pattern takes /size/ argument, but also optionally
+takes the second argument /element-type/, which is always bound
+to /character/.
+
+#+BEGIN_SRC lisp
+
+(ematch '(simple-string 5)
+ ((simple-string-type size) size)) ; --> 5
+
+(ematch '(simple-string 5)
+ ((simple-string-type _ type) type)) ; --> 'character
+
+(ematch '(base-string 5)
+ ((base-string-type _ type) type)) ; --> 'base-char
+
+#+END_SRC
+
+*List of general pattern names related to arrays*
+
++ general-base-string-type
++ general-string-type
++ general-bitvector-type
++ general-vector-type
++ general-simple-array-type
++ general-array-type
+
+For number types, we have patterns like /(float-type low high)/. Similarly
+to the array types, we have optional values that are bounded by default,
+e.g.,
+
+#+BEGIN_SRC lisp
+
+(match 'fixnum
+  ((general-integer-type low _) low)) ; --> MOST-NEGATIVE-FIXNUM
+
+#+END_SRC
+
+*List of general pattern names related to numbers*
+
++ general-byte-type
++ general-integer-type
++ general-float-type
++ general-real-type
++ general-integer-type
++ general-float-type
 
 ** Dependencies
 
