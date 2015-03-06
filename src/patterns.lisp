@@ -38,6 +38,8 @@ several assumptions: only &rest keywords can be recognized.
          (export ',name)
          (defpattern ,name (&optional ,@(wrap-wildcards args))
            ,@body)
+         (defmacro ,name (&optional ,@args)
+           (error "This macro is only for providing the editor support!"))
          ;; define field accessors
          ,@(mapcar (lambda (field-name i)
                      (let ((func-name (symbolicate name '- field-name)))
