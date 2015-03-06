@@ -39,6 +39,7 @@ several assumptions: only &rest keywords can be recognized.
          (defpattern ,name (&optional ,@(wrap-wildcards args))
            ,@body)
          (defmacro ,name (&optional ,@args)
+           (declare (ignorable ,@args))
            (error "This macro is only for providing the editor support!"))
          ;; define field accessors
          ,@(mapcar (lambda (field-name i)
@@ -203,19 +204,19 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
        (simple-string-type      ,dimensions ,element-type)
        (simple-vector-type      ,dimensions ,element-type)
        (simple-bit-vector-type  ,dimensions ,element-type)
-       (simple-array-type       ,dimensions ,element-type)))
+       (simple-array-type       ,element-type ,dimensions)))
 
 (defpattern-with-accessors general-array-type (element-type dimensions) 
   `(or (base-string-type        ,dimensions ,element-type)
        (string-type             ,dimensions ,element-type)
        (vector-type             ,dimensions ,element-type)
        (bit-vector-type         ,dimensions ,element-type)
-       (array-type              ,dimensions ,element-type)
+       (array-type              ,element-type ,dimensions)
        (simple-base-string-type ,dimensions ,element-type)
        (simple-string-type      ,dimensions ,element-type)
        (simple-vector-type      ,dimensions ,element-type)
        (simple-bit-vector-type  ,dimensions ,element-type)
-       (simple-array-type       ,dimensions ,element-type)))
+       (simple-array-type       ,element-type ,dimensions)))
 
 ;;;; union. intersection, etc.
 
