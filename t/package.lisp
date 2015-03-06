@@ -78,6 +78,52 @@
 )
 
 
+;; copied from Bike/compiler-macro. Its license is WTFPL, right?
+(test types
+  ;; ⇓these are not me saying :)
+  ;; fuck, man.
+  ;; a lot of this should be rexamined - using type equality or set equality predicates, that sort of thing.
+  (is (equal '(values integer &optional)
+	     (function-type-return-type '(function nil (values integer &optional)))))
+  (is (eql 'integer (values-type-primary 'integer)))
+  (is (eql 'null (values-type-primary '(values))))
+  (is (eql 'integer (values-type-primary '(values integer))))
+  (is (eql 'integer (values-type-primary '(values &optional integer))))
+  ;; this is modified because I no longer support this function.
+  ;; use (values-type-primary (function-type-return-type type)) instead
+  ;; (is (eql 'integer (function-type-primary-value '(function nil (values integer &optional)))))
+  (is (eql 'integer (values-type-primary (function-type-return-type '(function nil (values integer &optional))))))
+  (is (eql 'integer (array-type-element-type '(array integer))))
+
+  ;; different from compiler-macro. similar incompatibility is here, I stop describing it any more.
+  ;; (is-true (subtypep (array-type-element-type 'string) 'character))
+  (is-true (subtypep (general-array-type-element-type 'string) 'character))
+
+  (is (eql '* (general-array-type-dimensions '(simple-array * *))))
+  (is (eql '* (general-array-type-dimensions 'vector)))
+  (is (equal '(4 *) (general-array-type-dimensions '(simple-array nil (4 *)))))
+  ;; intersection, union -> and,or
+  (is (equal '(integer) (or-type-types '(or integer))))
+  (is (equal '(integer) (and-type-types '(and integer))))
+  (is (eql 'integer (not-type-type '(not integer))))
+  (is (eql '* (general-real-type-low 'integer)))
+  (signals error (general-real-type-low '(complex integer)))
+  (is (= most-negative-fixnum (general-real-type-low 'fixnum)))
+  (is (= (- (ash 1 (1- 7))) (general-real-type-low '(signed-byte 7))))
+  (is (eql '* (general-real-type-low '(signed-byte))))
+  (is (= 7 (general-real-type-low '(integer 7))))
+  (is (zerop (general-real-type-low '(mod 12))))
+  (is (equal '(0.7) (general-real-type-low '(short-float (0.7) 4.7))))
+  (is (= most-positive-fixnum (general-real-type-high 'fixnum)))
+  (is (= (1- (ash 1 12)) (general-real-type-high '(unsigned-byte 12))))
+  (is (equal '(long-float (6.6)) (complex-type-element-type '(complex (long-float (6.6))))))
+  (is (eql #\a (eql-type-object '(eql #\a))))
+  (is (equal '(#\b) (member-type-members '(member #\b))))
+  (is (eql 'plusp (satisfies-type-function '(satisfies plusp))))
+  (is (equal '(cons integer) (cons-type-car-type '(cons (cons integer) float))))
+  (is (eql 'float (cons-type-cdr-type '(cons (cons integer) float)))))
+
+
 
 (eval-when (:load-toplevel :execute)
   (run! :type-r))
