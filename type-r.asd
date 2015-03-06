@@ -27,5 +27,4 @@
                (:file "package")
                (:file "patterns"))
   :serial t
-  :description ""
   :in-order-to ((test-op (load-op type-r.test))))
