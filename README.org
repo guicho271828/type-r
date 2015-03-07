@@ -1,7 +1,7 @@
 
 * Type-R 
 
-[[https://travis-ci.org/guicho271828/TYPE-R][https://travis-ci.org/guicho271828/TYPE-R.svg?branch=master]]
+[[https://travis-ci.org/guicho271828/type-r][https://travis-ci.org/guicho271828/type-r.svg?branch=master]]
 
 
 This library tries to provide a collection of accessor functions for the
