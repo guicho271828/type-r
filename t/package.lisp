@@ -8,7 +8,7 @@
   (:use :cl
         :type-r
         :fiveam
-        :optima)
+        :trivia)
   (:shadow :fail))
 (in-package :type-r.test)
 

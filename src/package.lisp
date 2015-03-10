@@ -5,8 +5,7 @@
 
 (in-package :cl-user)
 (defpackage type-r
-  (:use :cl :optima :alexandria
-        :binding-pattern))
+  (:use :cl :trivia :alexandria))
 (in-package :type-r)
 
 ;; blah blah blah.

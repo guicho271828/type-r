@@ -21,10 +21,9 @@
   :description "Collections of Accessor Functions and Patterns to Handle Compound Types"
   :mailto "guicho2.71828@gmail.com"
   :license "LLGPL"
-  :depends-on (:optima :alexandria)
+  :depends-on (:trivia :alexandria)
   :pathname "src/"
-  :components ((:file "binding-pattern")
-               (:file "package")
+  :components ((:file "package")
                (:file "patterns"))
   :serial t
   :in-order-to ((test-op (load-op type-r.test))))

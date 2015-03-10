@@ -10,7 +10,7 @@
 
 ;;;; macros: defpattern-with-accessors
 ;;;; defpattern-with-accessor macro provides:
-;;;;   1. it is a simple wrapper around optima:defpattern.
+;;;;   1. it is a simple wrapper around trivia:defpattern.
 ;;;;   2. it defines accessors like function-type-return-type automatically,
 ;;;;      based on the names of the arguments.
 ;;;;   3. it defines predicates like function-type-p automatically.
@@ -20,7 +20,7 @@
   (defmacro defpattern-with-accessors (name args &body body)
     "
  defpattern-with-accessor macro provides:
-   1. it is a simple wrapper around optima:defpattern.
+   1. it is a simple wrapper around trivia:defpattern.
    2. it defines accessors like function-type-return-type automatically,
       based on the names of the arguments.
    3. it defines predicates like function-type-p automatically.
@@ -48,6 +48,7 @@ several assumptions: only &rest keywords can be recognized.
                           (export ',func-name)
                           (defun ,func-name (,obj)
                           (match ,obj
+
                             ((,name ,@(wildcards-but-nth len i field-name))
                              ,field-name)
                             (_ (error 'type-error
@@ -96,7 +97,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
   (defun make-binder (pair)
     (destructuring-bind (arg default) pair
-      `(<> ,arg _ ',default)))
+      `(<> ,arg ',default)))
 
   #+nil
   (print (make-atomic-array-type 'string '((element-type character)
@@ -132,14 +133,16 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 (defpattern-with-accessors values-type (primary)
   "this is tricky, since values type also takes &optional &rest etc."
-  `(or (list* 'values
-              (<> ,primary rest
-                  (or (find-if (lambda (x) (not (member x lambda-list-keywords)))
-                               rest)
-                      'null ;; take care of (values)
-                      )))
-       (and '* (<> ,primary _ t))
-       (and ,primary)))
+  (with-gensyms (rest)
+    `(or (list* 'values
+                (<> ,primary
+                    (or (find-if (lambda (x) (not (member x lambda-list-keywords)))
+                                 ,rest)
+                        ;; take care of (values)
+                        'null)
+                    ,rest))
+         (and '* (<> ,primary t))
+         (and ,primary))))
 
 ;;;; arrays
 
@@ -233,8 +236,8 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 (defpattern-with-accessors mod-type (low high)
   (with-gensyms (n)
-    `(and (list 'mod (<> ,high ,n (1- ,n)))
-          (<> ,low _ 0))))
+    `(and (list 'mod (<> ,high (1- ,n) ,n))
+          (<> ,low 0))))
 
 (defun nb (n)
   (1- (expt 2 n)))
@@ -243,23 +246,29 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
   (with-gensyms (n)
     `(and (or (list 'unsigned-byte
                     (and (type fixnum)
-                         (<> ,high ,n (1- (expt 2 ,n)))))
+                         (<> ,high (1- (expt 2 ,n)) ,n)))
               (list 'unsigned-byte
                     (and '* ,high))
-              (and (list 'unsigned-byte) (<> ,high _ '*)))
-          (<> ,low _ 0))))
+              (and (list 'unsigned-byte) (<> ,high '*)))
+          (<> ,low 0))))
 
 (defpattern-with-accessors signed-byte-type (low high)
   (with-gensyms (n)
     `(or (list 'signed-byte
-               (and (type fixnum)
-                    (<> ,high ,n (1- (expt 2 (1- ,n))))
-                    (<> ,low  ,n (-  (expt 2 (1- ,n))))))
+               (guard1 (,n :type fixnum) (typep ,n 'fixnum)
+                       (1- (expt 2 (1- ,n))) (guard ,high t)
+                       (-  (expt 2 (1- ,n))) (guard ,low t)))
          (list 'signed-byte
-               (and '* ,high ,low))
-         (and (or 'signed-byte (list 'signed-byte))
-              (<> ,high _ '*)
-              (<> ,low  _ '*)))))
+               (guard1 (,n :type symbol) (eq '* ,n)
+                       '* (guard ,high t)
+                       '* (guard ,low t)))
+         (list* 'signed-byte
+                (guard1 ,n (null ,n)
+                        '* (guard ,high t)
+                        '* (guard ,low t)))
+         (guard1 ,n (eq 'signed-byte ,n)
+                 '* (guard ,high t)
+                 '* (guard ,low t)))))
 
 (defpattern-with-accessors general-byte-type (low high)
   `(or (unsigned-byte-type ,low ,high)
