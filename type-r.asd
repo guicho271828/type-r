@@ -18,7 +18,7 @@
 (defsystem type-r
   :version "0.1"
   :author "Masataro Asai"
-  :description "Collections of Accessor Functions and Patterns to Handle Compound Types"
+  :description "Collections of accessor functions and patterns to access the elements in compound type specifier, e.g. `dimensions' in `(array element-type dimensions)'"
   :mailto "guicho2.71828@gmail.com"
   :license "LLGPL"
   :depends-on (:trivia :alexandria)
