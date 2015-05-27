@@ -12,6 +12,8 @@
 
 (defsystem type-r.test
   :author "Masataro Asai"
+  :description "Test system for type-r"
+  :mailto "guicho2.71828@gmail.com"
   :license "LLGPL"
   :depends-on (:type-r
                :fiveam)
