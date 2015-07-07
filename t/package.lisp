@@ -97,7 +97,7 @@
 
   ;; different from compiler-macro. similar incompatibility is here, I stop describing it any more.
   ;; (is-true (subtypep (array-type-element-type 'string) 'character))
-  (is-true (subtypep (array-type-element-subtype 'string) 'character))
+  (is-true (subtypep (array-subtype-element-type 'string) 'character))
 
   (is (eql '* (array-subtype-dimensions '(simple-array * *))))
   (is (eql '* (array-subtype-dimensions 'vector)))
