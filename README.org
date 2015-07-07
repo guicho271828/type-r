@@ -1,15 +1,27 @@
-
-* Type-R 
+* Type-R
 
 [[https://travis-ci.org/guicho271828/type-r][https://travis-ci.org/guicho271828/type-r.svg?branch=master]]
 
+This library provides a parser inferface for the built-in compound types
+defined in Common Lisp.
 
-This library tries to provide a collection of accessor functions for the
-built-in compound types defined in Common Lisp. This was initially a
-re-implementation of Bike/compiler-macro/type-utils.lisp which maintains
-the accessor for each type manually, with lots of /cond/ and
-/case/ statements, while I mostly automated the definition of accessors
-with macros.
+Consider when we have an unknown type specifier. It is easy to determine if
+this type is a subtype of =string= --- just use =subtypep=. Ok, so, is it
+also easy to parse the declared length of this string?
+
+Not quite trivial as expeceted. This is because CL allows a bunch of
+alternative representations for a =string= subtypes. We have to consider
+all of =(simple-base-string 50)= , =(string)= or =string=. This is the
+target of this library.
+
+This was initially a re-implementation of
+Bike/compiler-macro/type-utils.lisp . While it maintains the accessor for each
+type manually with lots of /cond/ and /case/ statements, I 
+automated the definition of accessors with macros and pattern matcher
+[[https://github.com/guicho271828/trivia][Trivia]], and provide more complete API for Common Lisp.
+
+Types covered by this library are shown in the table below: which means,
+every compound types in CL.
 
 c.f. http://www.lispworks.com/documentation/HyperSpec/Body/04_bc.htm
 
@@ -27,75 +39,110 @@ c.f. http://www.lispworks.com/documentation/HyperSpec/Body/04_bc.htm
 | integer      | simple-array |                    |
 |--------------+--------------+--------------------|
 
-Types covered by this library are shown in the table.
-For a given type specifier /X/, there is a pattern called /X-type/, e.g., for /string/, we
-have a pattern named /string-type/ . The name of a function that
-obtain the /Y/ portion of the given type specifier is named /X-type-Y/,
-e.g., for /size/ portion of /string-type/, we have /string-type-size/.
+** Accessors
+
+We have several accessor functions which returns the corresponding metadata
+of a given type specifier.
+The name of a function that obtains the /Y/ portion of a given type
+/X/ is named /X-type-Y/, e.g., for /size/ portion of /string/,
+we have /string-type-size/.
 
 #+BEGIN_SRC lisp
-
-(match '(string 50)
- ((string-type size) size)) ; --> 50
-
-(match '(string)
- ((string-type size) size)) ; --> '*
-
-(match 'string
- ((string-type size) size)) ; --> '*
-
 (string-type-size '(string 50)) ; --> 50
 (string-type-size '(string))    ; --> '*
 (string-type-size 'string)      ; --> '*
-
+(string-type-size 'base-string) ; |- error
+(string-type-size '(base-string 50)) ; |- error
 #+END_SRC
 
-Note that the subtype relationship is not considered. For example,
-/array-type/ does not match /simple-array/. Instead, I added
-/general-array-type/ and similar variants that matches all such
-type specifiers.
+At this moment, the subtype relationship is not considered. For example,
+/string-type-size/ does not match /base-string/. We have
+/string-subtype-size/ and similar variants that matches all such
+subtypes.
 
 #+BEGIN_SRC lisp
-; ematch throws an error when no clause matches
-(ematch '(simple-array * 3)
- ((array-type _ rank) rank)) ; --> error!
-
-(ematch '(simple-array * 3)
- ((general-array-type _ rank) rank)) ; --> 3
-
-(ematch '(simple-array * (3 2))
- ((general-array-type _ (list _ column)) column)) ; --> 2
-
-#+END_SRC
-
-For types that are written as "/Compound Type Specifier Kind:
-Specializing./" or "/Compound Type Specifier Kind: Abbreviating./" in CLHS,
-there may be optional parameters to the patterns: For example,
-/simple-string-type/ pattern takes /size/ argument, but also optionally
-takes the second argument /element-type/, which is always bound
-to /character/.
-
-#+BEGIN_SRC lisp
-
-(ematch '(simple-string 5)
- ((simple-string-type size) size)) ; --> 5
-
-(ematch '(simple-string 5)
- ((simple-string-type _ type) type)) ; --> 'character
-
-(ematch '(base-string 5)
- ((base-string-type _ type) type)) ; --> 'base-char
-
+(string-subtype-size '(string 50)) ; --> 50
+(string-subtype-size '(string))    ; --> '*
+(string-subtype-size 'string)      ; --> '*
+(string-subtype-size 'base-string) ; --> '*
+(string-subtype-size '(base-string 50)) ; --> 50
 #+END_SRC
 
 *List of general pattern names related to arrays*
 
-+ general-base-string-type
-+ general-string-type
-+ general-bitvector-type
-+ general-vector-type
-+ general-simple-array-type
-+ general-array-type
++ base-string-subtype
++ string-subtype
++ bitvector-subtype
++ vector-subtype
++ simple-array-subtype
++ array-subtype
+
+*List of general pattern names related to numbers*
+
++ byte-subtype
++ integer-subtype
++ float-subtype
++ real-subtype
++ float-subtype
+
+For type specifiers that are "/Compound Type Specifier Kind: Specializing./" or
+"/Compound Type Specifier Kind: Abbreviating./" in CLHS, there may be more
+metadata that do not explicitly appear in the type specifier but is still useful. For
+example, =string= implies that [[http://www.lispworks.com/documentation/lw51/CLHS/Body/t_string.htm][it is an array of =character= subtypes]] .
+
+Given that array's element-type is accessible through
+=array-type-element-type=, we also provide =string-type-element-type= and
+so on.
+
+#+BEGIN_SRC lisp
+(array-type-element-type 'array)               ; --> '*
+(array-type-element-type '(array * 20))        ; --> '*
+(array-type-element-type '(array character *)) ; --> 'character
+(string-type-element-type 'string)             ; --> 'character
+(array-subtype-element-type 'string)           ; --> 'character
+(array-type-element-type 'string)              ; |- error (use *-subtype-* instead)
+#+END_SRC
+
+** Pattern Matcher Integration
+
+Type-R is implemented with a pattern matcher Trivia. This allows further
+integration of type specifiers with pattern matchers.
+
+For a given type specifier /X/, there is a Trivia pattern /X-type/, e.g., for /string/, we
+have a pattern named /string-type/ .
+
+#+BEGIN_SRC lisp
+(match '(string 50)
+  ((string-type size) size)) ; --> 50
+
+(match '(string)
+  ((string-type size) size)) ; --> '*
+
+(match 'string
+  ((string-type size) size)) ; --> '*
+#+END_SRC
+
+#+BEGIN_SRC lisp
+(ematch '(simple-array * 3)
+  ((array-type _ rank) rank)) ; --> match error!
+
+(ematch '(simple-array * 3)
+  ((array-subtype _ rank) rank)) ; --> 3
+
+(ematch '(simple-array * (3 2))
+  ((array-subtype _ (list _ column)) column)) ; --> 2
+#+END_SRC
+
+#+BEGIN_SRC lisp
+(ematch '(simple-string 5)
+  ((simple-string-type size) size)) ; --> 5
+
+(ematch '(simple-string 5)
+  ((simple-string-type _ type) type)) ; --> 'character
+
+(ematch '(base-string 5)
+  ((base-string-type _ type) type)) ; --> 'base-char
+#+END_SRC
 
 For number types, we have patterns like /(float-type low high)/. Similarly
 to the array types, we have optional values that are bounded by default,
@@ -104,18 +151,32 @@ e.g.,
 #+BEGIN_SRC lisp
 
 (match 'fixnum
-  ((general-integer-type low _) low)) ; --> MOST-NEGATIVE-FIXNUM
+  ((integer-subtype low _) low)) ; --> [MOST-NEGATIVE-FIXNUM] (implementation dependent)
 
 #+END_SRC
 
-*List of general pattern names related to numbers*
 
-+ general-byte-type
-+ general-integer-type
-+ general-float-type
-+ general-real-type
-+ general-integer-type
-+ general-float-type
+# ** Predicates
+# 
+# These are fundamentally not different from =cl:subtypep=.
+# 
+# We have several predicates which returns true when a given type exactly matches
+# the expected type.
+# These predicates are named according to the standard convention:
+# /X-type-p/ for a type /X/.
+# 
+# #+BEGIN_SRC lisp
+# (string-type-p '(string 50)) ; --> t
+# (string-type-p '(string))    ; --> t
+# (string-type-p 'string)      ; --> t
+# (string-type-p 'base-string)      ; --> nil
+# #+END_SRC
+# 
+# As you see, the subtype relationship is not considered. For example,
+# /string-type-p/ does not match /base-string/. Instead, the library has
+# /string-subtype-p/ and similar variants that matches all such
+# type specifiers.
+
 
 ** Dependencies
 

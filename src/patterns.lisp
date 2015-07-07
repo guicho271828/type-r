@@ -178,17 +178,17 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 
 ;;;; general
-(defpattern-with-accessors general-base-string-type (size element-type)
+(defpattern-with-accessors base-string-subtype (size element-type)
   `(or (base-string-type            ,size ,element-type)
        (simple-base-string-type     ,size ,element-type)))
 
-(defpattern-with-accessors general-string-type (size element-type)
+(defpattern-with-accessors string-subtype (size element-type)
   `(or (base-string-type        ,size ,element-type)
        (string-type             ,size ,element-type)
        (simple-base-string-type ,size ,element-type)
        (simple-string-type      ,size ,element-type)))
 
-(defpattern-with-accessors general-vector-type (size element-type)
+(defpattern-with-accessors vector-subtype (size element-type)
   `(or (base-string-type        ,size ,element-type)
        (string-type             ,size ,element-type)
        (vector-type             ,size ,element-type)
@@ -198,18 +198,18 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
        (simple-vector-type      ,size ,element-type)
        (simple-bit-vector-type  ,size ,element-type)))
 
-(defpattern-with-accessors general-bitvector-type (size element-type)
+(defpattern-with-accessors bitvector-subtype (size element-type)
   `(or (bit-vector-type        ,size ,element-type)
        (simple-bit-vector-type ,size ,element-type)))
 
-(defpattern-with-accessors general-simple-array-type (element-type dimensions)
+(defpattern-with-accessors simple-array-subtype (element-type dimensions)
   `(or (simple-base-string-type ,dimensions ,element-type)
        (simple-string-type      ,dimensions ,element-type)
        (simple-vector-type      ,dimensions ,element-type)
        (simple-bit-vector-type  ,dimensions ,element-type)
        (simple-array-type       ,element-type ,dimensions)))
 
-(defpattern-with-accessors general-array-type (element-type dimensions) 
+(defpattern-with-accessors array-subtype (element-type dimensions) 
   `(or (base-string-type        ,dimensions ,element-type)
        (string-type             ,dimensions ,element-type)
        (vector-type             ,dimensions ,element-type)
@@ -270,7 +270,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
                  '* (guard ,high t)
                  '* (guard ,low t)))))
 
-(defpattern-with-accessors general-byte-type (low high)
+(defpattern-with-accessors byte-subtype (low high)
   `(or (unsigned-byte-type ,low ,high)
        (signed-byte-type ,low ,high)))
 
@@ -280,7 +280,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 (defpattern-with-accessors integer-type (low high)
   (make-types-matcher 'integer `((,low *) (,high *))))
 
-(defpattern-with-accessors general-integer-type (low high)
+(defpattern-with-accessors integer-subtype (low high)
   `(or (mod-type ,low ,high)
        (unsigned-byte-type ,low ,high)
        (signed-byte-type ,low ,high)
@@ -299,7 +299,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
   (make-types-matcher 'long-float `((,low *) (,high *))))
 (defpattern-with-accessors short-float-type (low high)
   (make-types-matcher 'short-float `((,low *) (,high *))))
-(defpattern-with-accessors general-float-type (low high)
+(defpattern-with-accessors float-subtype (low high)
   `(or (float-type ,low ,high)
        (short-float-type ,low ,high)
        (single-float-type ,low ,high)
@@ -317,9 +317,9 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 (defpattern-with-accessors ratio-type (low high)
   (make-types-matcher 'ratio nil `((,low *) (,high *))))
   
-(defpattern-with-accessors general-real-type (low high)
-  `(or (general-integer-type ,low ,high)
-       (general-float-type ,low ,high)
+(defpattern-with-accessors real-subtype (low high) 
+  `(or (integer-subtype ,low ,high)
+       (float-subtype ,low ,high)
        (real-type ,low ,high)
        (rational-type ,low ,high)
        (ratio-type ,low ,high)))
