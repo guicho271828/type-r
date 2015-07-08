@@ -146,49 +146,50 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 ;;;; arrays
 
-(defpattern-with-accessors string-type (size element-type)
-  (make-types-matcher 'string `((,size *)) `((,element-type character))))
+(defpattern-with-accessors string-type (size element-type simple-p)
+  (make-types-matcher 'string `((,size *)) `((,element-type character)) `((,simple-p nil))))
 
-(defpattern-with-accessors simple-string-type (size element-type)
-  (make-types-matcher 'simple-string `((,size *)) `((,element-type character))))
+(defpattern-with-accessors simple-string-type (size element-type simple-p)
+  (make-types-matcher 'simple-string `((,size *)) `((,element-type character)) `((,simple-p t))))
 
-(defpattern-with-accessors base-string-type (size element-type)
-  (make-types-matcher 'base-string `((,size *)) `((,element-type base-char))))
-(defpattern-with-accessors simple-base-string-type (size element-type)
-  (make-types-matcher 'simple-base-string `((,size *)) `((,element-type base-char))))
+(defpattern-with-accessors base-string-type (size element-type simple-p)
+  (make-types-matcher 'base-string `((,size *)) `((,element-type base-char)) `((,simple-p nil))))
 
-(defpattern-with-accessors vector-type (size element-type)
-  (make-types-matcher 'vector `((,element-type *) (,size *))))
+(defpattern-with-accessors simple-base-string-type (size element-type simple-p)
+  (make-types-matcher 'simple-base-string `((,size *)) `((,element-type base-char)) `((,simple-p t))))
 
-(defpattern-with-accessors simple-vector-type (size element-type)
-  (make-types-matcher 'simple-vector `((,size *)) `((,element-type *))))
+(defpattern-with-accessors vector-type (size element-type simple-p)
+  (make-types-matcher 'vector `((,element-type *) (,size *)) `((,simple-p nil))))
+
+(defpattern-with-accessors simple-vector-type (size element-type simple-p)
+  (make-types-matcher 'simple-vector `((,size *)) `((,element-type *)) `((,simple-p t))))
 
 
-(defpattern-with-accessors array-type (element-type dimensions)
-  (make-types-matcher 'array `((,element-type *) (,dimensions *))))
+(defpattern-with-accessors array-type (element-type dimensions simple-p)
+  (make-types-matcher 'array `((,element-type *) (,dimensions *)) `((,simple-p nil))))
 
-(defpattern-with-accessors simple-array-type (element-type dimensions)
-  (make-types-matcher 'simple-array `((,element-type *) (,dimensions *))))
+(defpattern-with-accessors simple-array-type (element-type dimensions simple-p)
+  (make-types-matcher 'simple-array `((,element-type *) (,dimensions *)) `((,simple-p t))))
 
-(defpattern-with-accessors bit-vector-type (size element-type)
-  (make-types-matcher 'bit-vector `((,size *)) `((,element-type bit))))
+(defpattern-with-accessors bit-vector-type (size element-type simple-p)
+  (make-types-matcher 'bit-vector `((,size *)) `((,element-type bit)) `((,simple-p nil))))
 
-(defpattern-with-accessors simple-bit-vector-type (size element-type)
-  (make-types-matcher 'simple-bit-vector `((,size *)) `((,element-type bit))))
+(defpattern-with-accessors simple-bit-vector-type (size element-type simple-p)
+  (make-types-matcher 'simple-bit-vector `((,size *)) `((,element-type bit)) `((,simple-p t))))
 
 
 ;;;; general
-(defpattern-with-accessors base-string-subtype (size element-type)
+(defpattern-with-accessors base-string-subtype (size element-type simple-p)
   `(or (base-string-type            ,size ,element-type)
        (simple-base-string-type     ,size ,element-type)))
 
-(defpattern-with-accessors string-subtype (size element-type)
+(defpattern-with-accessors string-subtype (size element-type simple-p)
   `(or (base-string-type        ,size ,element-type)
        (string-type             ,size ,element-type)
        (simple-base-string-type ,size ,element-type)
        (simple-string-type      ,size ,element-type)))
 
-(defpattern-with-accessors vector-subtype (size element-type)
+(defpattern-with-accessors vector-subtype (size element-type simple-p)
   `(or (base-string-type        ,size ,element-type)
        (string-type             ,size ,element-type)
        (vector-type             ,size ,element-type)
@@ -198,18 +199,18 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
        (simple-vector-type      ,size ,element-type)
        (simple-bit-vector-type  ,size ,element-type)))
 
-(defpattern-with-accessors bitvector-subtype (size element-type)
+(defpattern-with-accessors bitvector-subtype (size element-type simple-p)
   `(or (bit-vector-type        ,size ,element-type)
        (simple-bit-vector-type ,size ,element-type)))
 
-(defpattern-with-accessors simple-array-subtype (element-type dimensions)
+(defpattern-with-accessors simple-array-subtype (element-type dimensions simple-p)
   `(or (simple-base-string-type ,dimensions ,element-type)
        (simple-string-type      ,dimensions ,element-type)
        (simple-vector-type      ,dimensions ,element-type)
        (simple-bit-vector-type  ,dimensions ,element-type)
        (simple-array-type       ,element-type ,dimensions)))
 
-(defpattern-with-accessors array-subtype (element-type dimensions) 
+(defpattern-with-accessors array-subtype (element-type dimensions simple-p)
   `(or (base-string-type        ,dimensions ,element-type)
        (string-type             ,dimensions ,element-type)
        (vector-type             ,dimensions ,element-type)
