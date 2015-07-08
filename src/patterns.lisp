@@ -311,21 +311,24 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 ;;;;; misc real types
 
-(defpattern-with-accessors real-type (low high)
-  (make-types-matcher 'real `((,low *) (,high *))))
+(defpattern-with-accessors ratio-type (low high)
+  (make-types-matcher 'ratio nil `((,low *) (,high *))))
 
 (defpattern-with-accessors rational-type (low high)
   (make-types-matcher 'rational `((,low *) (,high *))))
 
-(defpattern-with-accessors ratio-type (low high)
-  (make-types-matcher 'ratio nil `((,low *) (,high *))))
-  
-(defpattern-with-accessors real-subtype (low high) 
+(defpattern-with-accessors rational-subtype (low high)
   `(or (integer-subtype ,low ,high)
-       (float-subtype ,low ,high)
-       (real-type ,low ,high)
-       (rational-type ,low ,high)
-       (ratio-type ,low ,high)))
+       (ratio-type ,low ,high)
+       (rational-type ,low ,high)))
+
+(defpattern-with-accessors real-type (low high)
+  (make-types-matcher 'real `((,low *) (,high *))))
+
+(defpattern-with-accessors real-subtype (low high) 
+  `(or (float-subtype ,low ,high)
+       (rational-subtype ,low ,high)
+       (real-type ,low ,high)))
 
 ;;;;; complex number type
 (defpattern-with-accessors complex-type (element-type)
