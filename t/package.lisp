@@ -44,10 +44,10 @@
       ((array-type _ rank) rank))) ; --> error!
 
   (ematch '(simple-array * 3)
-    ((general-array-type _ rank) (is (= 3 rank)))) ; --> 3
+    ((array-subtype _ rank) (is (= 3 rank)))) ; --> 3
 
   (ematch '(simple-array * (3 2))
-    ((general-array-type _ (list _ column)) (is (= 2 column)))) ; --> 2
+    ((array-subtype _ (list _ column)) (is (= 2 column)))) ; --> 2
 
 )
 
@@ -69,11 +69,11 @@
      (is (= -0.08 low))))
 
   (match '(float -0.08 1.7)
-    ((general-float-type low _)
+    ((float-subtype low _)
      (is (= -0.08 low))))
 
   (match 'fixnum
-    ((general-integer-type low _)
+    ((integer-subtype low _)
      (is (= MOST-NEGATIVE-FIXNUM low))))
 )
 
@@ -97,25 +97,25 @@
 
   ;; different from compiler-macro. similar incompatibility is here, I stop describing it any more.
   ;; (is-true (subtypep (array-type-element-type 'string) 'character))
-  (is-true (subtypep (general-array-type-element-type 'string) 'character))
+  (is-true (subtypep (array-subtype-element-type 'string) 'character))
 
-  (is (eql '* (general-array-type-dimensions '(simple-array * *))))
-  (is (eql '* (general-array-type-dimensions 'vector)))
-  (is (equal '(4 *) (general-array-type-dimensions '(simple-array nil (4 *)))))
+  (is (eql '* (array-subtype-dimensions '(simple-array * *))))
+  (is (eql '* (array-subtype-dimensions 'vector)))
+  (is (equal '(4 *) (array-subtype-dimensions '(simple-array nil (4 *)))))
   ;; intersection, union -> and,or
   (is (equal '(integer) (or-type-types '(or integer))))
   (is (equal '(integer) (and-type-types '(and integer))))
   (is (eql 'integer (not-type-type '(not integer))))
-  (is (eql '* (general-real-type-low 'integer)))
-  (signals error (general-real-type-low '(complex integer)))
-  (is (= most-negative-fixnum (general-real-type-low 'fixnum)))
-  (is (= (- (ash 1 (1- 7))) (general-real-type-low '(signed-byte 7))))
-  (is (eql '* (general-real-type-low '(signed-byte))))
-  (is (= 7 (general-real-type-low '(integer 7))))
-  (is (zerop (general-real-type-low '(mod 12))))
-  (is (equal '(0.7) (general-real-type-low '(short-float (0.7) 4.7))))
-  (is (= most-positive-fixnum (general-real-type-high 'fixnum)))
-  (is (= (1- (ash 1 12)) (general-real-type-high '(unsigned-byte 12))))
+  (is (eql '* (real-subtype-low 'integer)))
+  (signals error (real-subtype-low '(complex integer)))
+  (is (= most-negative-fixnum (real-subtype-low 'fixnum)))
+  (is (= (- (ash 1 (1- 7))) (real-subtype-low '(signed-byte 7))))
+  (is (eql '* (real-subtype-low '(signed-byte))))
+  (is (= 7 (real-subtype-low '(integer 7))))
+  (is (zerop (real-subtype-low '(mod 12))))
+  (is (equal '(0.7) (real-subtype-low '(short-float (0.7) 4.7))))
+  (is (= most-positive-fixnum (real-subtype-high 'fixnum)))
+  (is (= (1- (ash 1 12)) (real-subtype-high '(unsigned-byte 12))))
   (is (equal '(long-float (6.6)) (complex-type-element-type '(complex (long-float (6.6))))))
   (is (eql #\a (eql-type-object '(eql #\a))))
   (is (equal '(#\b) (member-type-members '(member #\b))))
