@@ -277,6 +277,8 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 (defpattern-with-accessors fixnum-type (low high)
   (make-types-matcher 'fixnum nil `((,low ,MOST-NEGATIVE-FIXNUM)
                                     (,high ,MOST-POSITIVE-FIXNUM))))
+(defpattern-with-accessors bignum-type (low high)
+  (make-types-matcher 'bignum nil `((,low *) (,high *))))
 (defpattern-with-accessors integer-type (low high)
   (make-types-matcher 'integer `((,low *) (,high *))))
 
@@ -284,6 +286,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
   `(or (mod-type ,low ,high)
        (unsigned-byte-type ,low ,high)
        (signed-byte-type ,low ,high)
+       (bignum-type ,low ,high)
        (fixnum-type ,low ,high)
        (integer-type ,low ,high)))
 
