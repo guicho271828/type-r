@@ -161,7 +161,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
   (make-types-matcher 'vector `((,element-type *) (,size *))))
 
 (defpattern-with-accessors simple-vector-type (size element-type)
-  (make-types-matcher 'simple-vector `((,size *)) `((,element-type *))))
+  (make-types-matcher 'simple-vector `((,size *)) `((,element-type t))))
 
 
 (defpattern-with-accessors array-type (element-type dimensions)
@@ -239,9 +239,6 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
     `(and (list 'mod (<> ,high (1- ,n) ,n))
           (<> ,low 0))))
 
-(defun nb (n)
-  (1- (expt 2 n)))
-
 (defpattern-with-accessors unsigned-byte-type (low high)
   (with-gensyms (n)
     `(and (or (list 'unsigned-byte
@@ -295,13 +292,13 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 (defpattern-with-accessors float-type (low high)
   (make-types-matcher 'float `((,low *) (,high *))))
 (defpattern-with-accessors single-float-type (low high)
-  (make-types-matcher 'single-float `((,low *) (,high *))))
+  (make-types-matcher 'single-float `((,low ,most-negative-single-float) (,high ,most-positive-single-float))))
 (defpattern-with-accessors double-float-type (low high)
-  (make-types-matcher 'double-float `((,low *) (,high *))))
+  (make-types-matcher 'double-float `((,low ,most-negative-double-float) (,high ,most-positive-double-float))))
 (defpattern-with-accessors long-float-type (low high)
-  (make-types-matcher 'long-float `((,low *) (,high *))))
+  (make-types-matcher 'long-float `((,low ,most-negative-long-float) (,high ,most-positive-long-float))))
 (defpattern-with-accessors short-float-type (low high)
-  (make-types-matcher 'short-float `((,low *) (,high *))))
+  (make-types-matcher 'short-float `((,low ,most-negative-short-float) (,high ,most-positive-short-float))))
 (defpattern-with-accessors float-subtype (low high)
   `(or (float-type ,low ,high)
        (short-float-type ,low ,high)
