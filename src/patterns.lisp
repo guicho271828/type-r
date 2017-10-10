@@ -161,7 +161,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
   (make-types-matcher 'vector `((,element-type *) (,size *))))
 
 (defpattern-with-accessors simple-vector-type (size element-type)
-  (make-types-matcher 'simple-vector `((,size *)) `((,element-type *))))
+  (make-types-matcher 'simple-vector `((,size *)) `((,element-type t))))
 
 
 (defpattern-with-accessors array-type (element-type dimensions)
