@@ -239,9 +239,6 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
     `(and (list 'mod (<> ,high (1- ,n) ,n))
           (<> ,low 0))))
 
-(defun nb (n)
-  (1- (expt 2 n)))
-
 (defpattern-with-accessors unsigned-byte-type (low high)
   (with-gensyms (n)
     `(and (or (list 'unsigned-byte
