@@ -239,6 +239,11 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
     `(and (list 'mod (<> ,high (1- ,n) ,n))
           (<> ,low 0))))
 
+(defpattern-with-accessors bit-type (low high)
+  `(and 'bit
+        (<> ,high 1)
+        (<> ,low 0)))
+
 (defpattern-with-accessors unsigned-byte-type (low high)
   (with-gensyms (n)
     `(and (or (list 'unsigned-byte
@@ -281,6 +286,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 (defpattern-with-accessors integer-subtype (low high)
   `(or (mod-type ,low ,high)
+       (bit-type ,low ,high)
        (unsigned-byte-type ,low ,high)
        (signed-byte-type ,low ,high)
        (bignum-type ,low ,high)
