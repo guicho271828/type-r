@@ -2,14 +2,14 @@
 
 [[https://travis-ci.org/guicho271828/type-r][https://travis-ci.org/guicho271828/type-r.svg?branch=master]]
 
-This library provides a parser inferface for the built-in compound types
+This library provides a parser interface for the built-in compound types
 defined in Common Lisp.
 
 Consider when we have an unknown type specifier. It is easy to determine if
 this type is a subtype of =string= --- just use =subtypep=. Ok, so, is it
 also easy to parse the declared length of this string?
 
-Not quite trivial as expeceted. This is because CL allows a bunch of
+Not quite trivial as expected. This is because CL allows a bunch of
 alternative representations for a =string= subtypes. We have to consider
 all of =(simple-base-string 50)= , =(string)= or =string=. This is the
 target of this library.
@@ -22,9 +22,11 @@ automated the definition of accessors with macros and pattern matcher
 
 Types covered by this library are shown in the table below: which means,
 every compound types in CL.
+For the complete list of accessors, see [[http://quickdocs.org/type-r/api][quickdocs reference]].
 
 c.f. http://www.lispworks.com/documentation/HyperSpec/Body/04_bc.htm
 
+|              |              |                    |
 |--------------+--------------+--------------------|
 | and          | long-float   | simple-base-string |
 | array        | member       | simple-bit-vector  |
@@ -35,11 +37,11 @@ c.f. http://www.lispworks.com/documentation/HyperSpec/Body/04_bc.htm
 | double-float | real         | unsigned-byte      |
 | eql          | satisfies    | values             |
 | float        | short-float  | vector             |
-| function     | signed-byte  |                    |
+| function     | signed-byte  | bit                |
 | integer      | simple-array |                    |
 |--------------+--------------+--------------------|
 
-** Accessors
+** Type Accessors
 
 We have several accessor functions which returns the corresponding metadata
 of a given type specifier.
@@ -77,14 +79,6 @@ subtypes.
 + simple-array-subtype
 + array-subtype
 
-*List of general pattern names related to numbers*
-
-+ byte-subtype
-+ integer-subtype
-+ float-subtype
-+ real-subtype
-+ float-subtype
-
 For type specifiers that are "/Compound Type Specifier Kind: Specializing./" or
 "/Compound Type Specifier Kind: Abbreviating./" in CLHS, there may be more
 metadata that do not explicitly appear in the type specifier but is still useful. For
@@ -102,6 +96,32 @@ so on.
 (array-subtype-element-type 'string)           ; --> 'character
 (array-type-element-type 'string)              ; |- error (use *-subtype-* instead)
 #+END_SRC
+
+** Number types
+
+*List of general pattern names related to numbers*
+
++ byte-subtype
++ integer-subtype
++ float-subtype
++ real-subtype
++ float-subtype
+
+Number type /X/ have the corresponding functions /X/-low and /X/-high which
+shows the lower and the upper bound.
+
+=MOD= type is a subtype of integers, so it is also supported.
+Same for =BIT= type.
+
+** Other types
+
+We also support =function=, =values=, =member=, =or=, =and=, =cons=, =member=, =eql=.
+
++ =function= has =function-type-return-type= / =function-type-args-type= accessors.
++ =member= has =member-type-members-=.
++ =or= / =and= has =or/and-type-types=.
++ =cons= has =cons-type-car/cdr-type=.
++ =eql= has =eql-type-object=.
 
 ** Pattern Matcher Integration
 
