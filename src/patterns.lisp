@@ -297,14 +297,19 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 (defpattern-with-accessors float-type (low high)
   (make-types-matcher 'float `((,low *) (,high *))))
+
+;; Note: these lower bound and higher bounds used to be most-negative/positive-X.
+;; However, this is not a consise definition because floats can represent pos/neg infinity or even NaN,
+;; so making the bounds the fixed numbers does not sound quite right.
+;; It also deviates from the standard because the default value of those lows/highs are *.
 (defpattern-with-accessors single-float-type (low high)
-  (make-types-matcher 'single-float `((,low ,most-negative-single-float) (,high ,most-positive-single-float))))
+  (make-types-matcher 'single-float `((,low *) (,high *))))
 (defpattern-with-accessors double-float-type (low high)
-  (make-types-matcher 'double-float `((,low ,most-negative-double-float) (,high ,most-positive-double-float))))
+  (make-types-matcher 'double-float `((,low *) (,high *))))
 (defpattern-with-accessors long-float-type (low high)
-  (make-types-matcher 'long-float `((,low ,most-negative-long-float) (,high ,most-positive-long-float))))
+  (make-types-matcher 'long-float `((,low *) (,high *))))
 (defpattern-with-accessors short-float-type (low high)
-  (make-types-matcher 'short-float `((,low ,most-negative-short-float) (,high ,most-positive-short-float))))
+  (make-types-matcher 'short-float `((,low *) (,high *))))
 (defpattern-with-accessors float-subtype (low high)
   `(or (float-type ,low ,high)
        (short-float-type ,low ,high)
