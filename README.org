@@ -213,6 +213,166 @@ e.g.,
 # type specifiers.
 
 
+** Example
+
+When writing a numerical manipulation library,
+it is sometimes necessary to convert a set of several type specifiers under REAL, e.g. RATIO, INTEGERS, FLOATS,
+to the least specific FLOAT type when any one of them are not integers. The rule for writing this could be cumbersome
+without this library.
+
+
+Let's start with an incomplete function that converts two given types into a long-float type
+when one of them is a long-float type specifier:
+
+#+begin_src lisp
+(defun upgrade-to-long-float (type1 type2)
+  (ematch* (type1 type2)
+    (((long-float-type l1 h1) (long-float-type l2 h2))
+     
+     `(long-float ,(min* l1 l2)
+                  ,(max* h1 h2)))
+    
+    (((real-subtype l1 h1) (long-float-type l2 h2))
+     
+     `(long-float ,(min* l1 l2)
+                  ,(max* h1 h2)))
+    
+    (((long-float-type l2 h2) (real-subtype l1 h1))
+     
+     `(long-float ,(min* l1 l2)
+                  ,(max* h1 h2)))))
+#+end_src
+
+This function takes two types, then performs a pattern match on them.
+We used =ematch*= which we can feed multiple objects (unlike =ematch=),
+and =ematch*= signals an error when none of the patterns are matched,
+unlike =match*= which just returns a =nil= when that happens.
+
+The code dispatches to the corresponding branch and decomposes the type specifier into its =low= and =high= component.
+
+Note that we cannot use the standard =min= or =max= because =low= and =high= could be a symbol ='*=.
+=min*= and =max*= are exactly those variants as defined below.
+
+Also note that we use =real-subtype= pattern instead of =real-type= pattern because we want to match all type specifiers
+that is a subtype of =real=.
+
+#+begin_src lisp
+(defun min* (a b)
+  (declare ((or (eql *) real) a b))
+  (ematch* (a b)
+    (('* _) '*)
+    ((_ '*) '*)
+    ((_ _) (min a b))))
+
+(defun max* (a b)
+  (declare ((or (eql *) real) a b))
+  (ematch* (a b)
+    (('* _) '*)
+    ((_ '*) '*)
+    ((_ _) (max a b))))
+#+end_src
+
+Now what we finally need to do is to cover all subtypes of float.
+Note that the match is performed in a top-down manner therefore
+we don't have to worry =short-float= matched before =long-float= etc.
+
+#+begin_src lisp
+(defun upgrade-to-float-type (&rest typespecs)
+  (reduce (lambda (prev now)
+            (ematch* (prev now)
+              (((long-float-type l1 h1) (long-float-type l2 h2))
+               `(long-float ,(min* l1 l2)
+                            ,(max* h1 h2)))
+              
+              (((real-subtype l1 h1) (long-float-type l2 h2))
+               `(long-float ,(min* l1 l2)
+                            ,(max* h1 h2)))
+              
+              (((long-float-type l2 h2) (real-subtype l1 h1))
+               `(long-float ,(min* l1 l2)
+                            ,(max* h1 h2)))
+
+              
+              (((double-float-type l1 h1) (double-float-type l2 h2))
+               `(double-float ,(min* l1 l2)
+                              ,(max* h1 h2)))
+              
+              (((real-subtype l1 h1) (double-float-type l2 h2))
+               `(double-float ,(min* l1 l2)
+                              ,(max* h1 h2)))
+              
+              (((double-float-type l2 h2) (real-subtype l1 h1))
+               `(double-float ,(min* l1 l2)
+                              ,(max* h1 h2)))
+
+              
+              (((single-float-type l1 h1) (single-float-type l2 h2))
+               `(single-float ,(min* l1 l2)
+                              ,(max* h1 h2)))
+              
+              (((real-subtype l1 h1) (single-float-type l2 h2))
+               `(single-float ,(min* l1 l2)
+                              ,(max* h1 h2)))
+              
+              (((single-float-type l2 h2) (real-subtype l1 h1))
+               `(single-float ,(min* l1 l2)
+                              ,(max* h1 h2)))
+
+             
+              (((short-float-type l1 h1) (short-float-type l2 h2))
+               `(short-float ,(min* l1 l2)
+                             ,(max* h1 h2)))
+              
+              (((real-subtype l1 h1) (short-float-type l2 h2))
+               `(short-float ,(min* l1 l2)
+                             ,(max* h1 h2)))
+              
+              (((short-float-type l2 h2) (real-subtype l1 h1))
+               `(short-float ,(min* l1 l2)
+                             ,(max* h1 h2)))
+
+              ;; the specific flaot type is unspecified.
+              (((float-type l1 h1) (float-type l2 h2))
+               `(float ,(min* l1 l2)
+                       ,(max* h1 h2)))
+              
+              (((real-subtype l1 h1) (float-type l2 h2))
+               `(float ,(min* l1 l2)
+                       ,(max* h1 h2)))
+              
+              (((float-type l2 h2) (real-subtype l1 h1))
+               `(float ,(min* l1 l2)
+                       ,(max* h1 h2)))
+
+              ;; Now both are rationals = (or integer ratio) = (or (or bignum fixnum) ratio).
+              ;; Ratios are converted into single-floats.
+
+              (((ratio-type l1 h1) (ratio-type l2 h2))
+               `(single-float ,(min* l1 l2)
+                              ,(max* h1 h2)))
+              
+              (((real-subtype l1 h1) (ratio-type l2 h2))
+               `(single-float ,(min* l1 l2)
+                              ,(max* h1 h2)))
+              
+              (((ratio-type l2 h2) (real-subtype l1 h1))
+               `(single-float ,(min* l1 l2)
+                              ,(max* h1 h2)))
+
+              ;; Now both are integers.
+              ;; we first match the case with two fixnums:
+              (((fixnum-subtype l1 h1) (fixnum-subtype l2 h2))
+               ;; note that this also includes the bignum type specifiers
+               ;; with a sufficiently small limit.
+               `(integer ,(min l1 l2) ,(max h1 h2)))
+
+              ;; the last case is the integers beyond the fixnum range.
+              (((real-subtype l1 h1) (real-subtype l2 h2))
+               `(single-float ,(min* l1 l2)
+                              ,(max* h1 h2)))))
+          typespecs))
+#+end_src
+
 ** Dependencies
 
 This library is at least tested on implementation listed below:
