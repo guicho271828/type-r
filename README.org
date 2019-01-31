@@ -99,16 +99,31 @@ so on.
 
 ** Number types
 
+Number type /X/ have the corresponding functions /X/-low and /X/-high which
+shows the lower and the upper bound. Oftencases they are the symbol =*=.
+
+#+BEGIN_SRC lisp
+(fixnum-type-low 'fixnum)                       ; --> most-negative-fixnum
+(unsigned-byte-type-high '(unsigned-byte 5))    ; --> 31
+(float-type-low 'float)                         ; --> '*
+(single-float-type-low 'single-float)           ; --> '*
+(single-float-type-low '(single-float -1.0 2.0) ; --> 1.0
+(mod-type-low '(mod 5))                         ; --> 0
+(mod-type-high '(mod 5))                        ; --> 4
+#+END_SRC
+
+Since these are specific to the single type specifier, we again provide the
+=X-subtype-Y= variants.
+
 *List of general pattern names related to numbers*
 
-+ byte-subtype
-+ integer-subtype
++ byte-subtype --- covers both =(unsigned-byte ...)= and =(signed-byte ...)= variants.
++ integer-subtype --- covers all of =mod,bit,unsigned-byte,signed-byte,bignum,fixnum,integer= type specifiers.
++ fixnum-subtype --- Same as integer-subtype but it matches only when =low,high= are within the fixnum range.
 + float-subtype
 + real-subtype
 + float-subtype
 
-Number type /X/ have the corresponding functions /X/-low and /X/-high which
-shows the lower and the upper bound.
 
 =MOD= type is a subtype of integers, so it is also supported.
 Same for =BIT= type.

@@ -235,6 +235,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 ;;;;; integer types
 
 (defpattern-with-accessors mod-type (low high)
+  ;; (mod 5) --> high = 4 
   (with-gensyms (n)
     `(and (list 'mod (<> ,high (1- ,n) ,n))
           (<> ,low 0))))
