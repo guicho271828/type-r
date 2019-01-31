@@ -293,6 +293,10 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
        (fixnum-type ,low ,high)
        (integer-type ,low ,high)))
 
+(defpattern-with-accessors fixnum-subtype (low high)
+  "Covers not only fixnums but also unsigned/signed bytes within the fixnum range."
+  `(integer-subtype (and ,low (>= most-negative-fixnum)) (and ,high (<= most-positive-fixnum))))
+
 ;;;;; float types
 
 (defpattern-with-accessors float-type (low high)
