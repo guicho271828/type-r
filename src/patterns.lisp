@@ -33,9 +33,10 @@ several assumptions: only &rest keywords can be recognized.
       (assert (not violated) nil "~a found in ~a" violated args))
     (let* ((len (length args))
            (obj (gensym "OBJ"))
-           (pred-name (symbolicate name '-p)))
+           (pred-name (symbolicate name '-p))
+           (export-p (alphanumericp (elt (symbol-name name) 0))))
       `(eval-when (:compile-toplevel :load-toplevel :execute)
-         (export ',name)
+         ,@(when export-p `((export ',name)))
          (defpattern ,name (&optional ,@(wrap-wildcards args))
            ,@body)
          (defmacro ,name (&optional ,@args)
@@ -45,7 +46,7 @@ several assumptions: only &rest keywords can be recognized.
          ,@(mapcar (lambda (field-name i)
                      (let ((func-name (symbolicate name '- field-name)))
                        `(progn
-                          (export ',func-name)
+                          ,@(when export-p `((export ',func-name)))
                           (defun ,func-name (,obj)
                           (match ,obj
 
@@ -56,7 +57,7 @@ several assumptions: only &rest keywords can be recognized.
                                       :datum ,obj)))))))
                    args (iota len))
          ;; define predicates
-         (export ',pred-name)
+         ,@(when export-p `((export ',pred-name)))
          (defun ,pred-name (,obj)
            (match ,obj
              ((,name) t) (_ nil))))))
