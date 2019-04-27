@@ -370,3 +370,8 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 (defpattern-with-accessors cons-type (car-type cdr-type)
   (make-types-matcher 'cons `((,car-type *) (,cdr-type *))))
 
+(defpattern-with-accessors null-type ()
+  (make-types-matcher 'null nil))
+
+(defpattern-with-accessors list-type ()
+  (make-types-matcher 'list nil))
