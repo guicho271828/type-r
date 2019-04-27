@@ -306,19 +306,6 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 (defpattern-with-accessors integer-type (low high)
   (make-types-matcher ''integer `((,low *) (,high *))))
 
-(defpattern-with-accessors integer-subtype (low high)
-  `(or (%mod-type ,low ,high)
-       (%bit-type ,low ,high)
-       (%unsigned-byte-type ,low ,high)
-       (%signed-byte-type ,low ,high)
-       (%bignum-type ,low ,high)
-       (%fixnum-type ,low ,high)
-       (integer-type ,low ,high)))
-
-(defpattern-with-accessors fixnum-subtype (low high)
-  "Covers not only fixnums but also unsigned/signed bytes within the fixnum range."
-  `(integer-subtype (and ,low (>= most-negative-fixnum)) (and ,high (<= most-positive-fixnum))))
-
 ;;;;; float types
 
 (defpattern-with-accessors float-type (low high)
@@ -336,6 +323,35 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
   (make-types-matcher ''long-float `((,low *) (,high *))))
 (defpattern-with-accessors short-float-type (low high)
   (make-types-matcher ''short-float `((,low *) (,high *))))
+
+;;;;; misc real types
+
+(defpattern-with-accessors ratio-type ()
+  (make-types-matcher ''ratio nil))
+(defpattern-with-accessors %ratio-type (low high)
+  (make-types-matcher ''ratio nil `((,low *) (,high *))))
+
+(defpattern-with-accessors rational-type (low high)
+  (make-types-matcher ''rational `((,low *) (,high *))))
+
+(defpattern-with-accessors real-type (low high)
+  (make-types-matcher ''real `((,low *) (,high *))))
+
+;;;;; subtypes
+
+(defpattern-with-accessors integer-subtype (low high)
+  `(or (%mod-type ,low ,high)
+       (%bit-type ,low ,high)
+       (%unsigned-byte-type ,low ,high)
+       (%signed-byte-type ,low ,high)
+       (%bignum-type ,low ,high)
+       (%fixnum-type ,low ,high)
+       (integer-type ,low ,high)))
+
+(defpattern-with-accessors fixnum-subtype (low high)
+  "Covers not only fixnums but also unsigned/signed bytes within the fixnum range."
+  `(integer-subtype (and ,low (>= most-negative-fixnum)) (and ,high (<= most-positive-fixnum))))
+
 (defpattern-with-accessors float-subtype (low high)
   (make-types-matcher '(or
                         'float
@@ -345,26 +361,37 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
                         'long-float)
                       `((,low *) (,high *))))
 
-;;;;; misc real types
-
-(defpattern-with-accessors ratio-type (low high)
-  (make-types-matcher ''ratio nil `((,low *) (,high *))))
-
-(defpattern-with-accessors rational-type (low high)
-  (make-types-matcher ''rational `((,low *) (,high *))))
-
 (defpattern-with-accessors rational-subtype (low high)
-  `(or (integer-subtype ,low ,high)
-       (ratio-type ,low ,high)
-       (rational-type ,low ,high)))
-
-(defpattern-with-accessors real-type (low high)
-  (make-types-matcher ''real `((,low *) (,high *))))
+  `(or (%mod-type ,low ,high)
+       (%bit-type ,low ,high)
+       (%unsigned-byte-type ,low ,high)
+       (%signed-byte-type ,low ,high)
+       (%bignum-type ,low ,high)
+       (%fixnum-type ,low ,high)
+       (%ratio-type  ,low ,high)
+       ,(make-types-matcher '(or
+                              'integer
+                              'rational)
+                            `((,low *) (,high *)))))
 
 (defpattern-with-accessors real-subtype (low high) 
-  `(or (float-subtype ,low ,high)
-       (rational-subtype ,low ,high)
-       (real-type ,low ,high)))
+  `(or (%mod-type ,low ,high)
+       (%bit-type ,low ,high)
+       (%unsigned-byte-type ,low ,high)
+       (%signed-byte-type ,low ,high)
+       (%bignum-type ,low ,high)
+       (%fixnum-type ,low ,high)
+       (%ratio-type  ,low ,high)
+       ,(make-types-matcher '(or
+                              'float
+                              'short-float
+                              'single-float
+                              'double-float
+                              'long-float
+                              'integer
+                              'rational
+                              'real)
+                            `((,low *) (,high *)))))
 
 ;;;;; complex number type
 (defpattern-with-accessors complex-type (element-type)
