@@ -347,6 +347,15 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 (defpattern-with-accessors complex-type (element-type)
   (make-types-matcher 'complex `((,element-type *))))
 
+;;;; number type
+
+(defpattern-with-accessors number-type ()
+  (make-types-matcher 'number nil))
+
+(defpattern-with-accessors number-subtype ()
+  `(or (real-subtype)
+       (complex-type)))
+
 ;;;; combining type specifiers
 
 (defpattern-with-accessors eql-type (object)
