@@ -93,7 +93,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
          ,(make-compound-type-matcher name arglist fixed))) ; compound type specifier
 
   (defun make-atomic-type-matcher (name arglist)
-    `(and ',name ,@(mapcar #'make-binder arglist)))
+    `(and ,name ,@(mapcar #'make-binder arglist)))
 
   (defun make-binder (pair)
     (destructuring-bind (arg default) pair
@@ -105,7 +105,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
   (defun make-compound-type-matcher (name specified unspecified)
     (labels ((list-specified (specified)
-               `(list ',name ,@(mapcar #'car specified)))
+               `(list ,name ,@(mapcar #'car specified)))
              (render (specified unspecified)
                `(and ,(list-specified (reverse specified))
                      ,@(mapcar #'make-binder unspecified)))
@@ -129,7 +129,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 ;;;; function type, values type
 
 (defpattern-with-accessors function-type (args-types return-type)
-  (make-types-matcher 'function `((,args-types (&rest *)) (,return-type *))))
+  (make-types-matcher ''function `((,args-types (&rest *)) (,return-type *))))
 
 (defpattern-with-accessors values-type (primary)
   "this is tricky, since values type also takes &optional &rest etc."
@@ -147,34 +147,34 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 ;;;; arrays
 
 (defpattern-with-accessors string-type (size element-type)
-  (make-types-matcher 'string `((,size *)) `((,element-type character))))
+  (make-types-matcher ''string `((,size *)) `((,element-type character))))
 
 (defpattern-with-accessors simple-string-type (size element-type)
-  (make-types-matcher 'simple-string `((,size *)) `((,element-type character))))
+  (make-types-matcher ''simple-string `((,size *)) `((,element-type character))))
 
 (defpattern-with-accessors base-string-type (size element-type)
-  (make-types-matcher 'base-string `((,size *)) `((,element-type base-char))))
+  (make-types-matcher ''base-string `((,size *)) `((,element-type base-char))))
 (defpattern-with-accessors simple-base-string-type (size element-type)
-  (make-types-matcher 'simple-base-string `((,size *)) `((,element-type base-char))))
+  (make-types-matcher ''simple-base-string `((,size *)) `((,element-type base-char))))
 
 (defpattern-with-accessors vector-type (size element-type)
-  (make-types-matcher 'vector `((,element-type *) (,size *))))
+  (make-types-matcher ''vector `((,element-type *) (,size *))))
 
 (defpattern-with-accessors simple-vector-type (size element-type)
-  (make-types-matcher 'simple-vector `((,size *)) `((,element-type t))))
+  (make-types-matcher ''simple-vector `((,size *)) `((,element-type t))))
 
 
 (defpattern-with-accessors array-type (element-type dimensions)
-  (make-types-matcher 'array `((,element-type *) (,dimensions *))))
+  (make-types-matcher ''array `((,element-type *) (,dimensions *))))
 
 (defpattern-with-accessors simple-array-type (element-type dimensions)
-  (make-types-matcher 'simple-array `((,element-type *) (,dimensions *))))
+  (make-types-matcher ''simple-array `((,element-type *) (,dimensions *))))
 
 (defpattern-with-accessors bit-vector-type (size element-type)
-  (make-types-matcher 'bit-vector `((,size *)) `((,element-type bit))))
+  (make-types-matcher ''bit-vector `((,size *)) `((,element-type bit))))
 
 (defpattern-with-accessors simple-bit-vector-type (size element-type)
-  (make-types-matcher 'simple-bit-vector `((,size *)) `((,element-type bit))))
+  (make-types-matcher ''simple-bit-vector `((,size *)) `((,element-type bit))))
 
 
 ;;;; general
@@ -278,12 +278,12 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
        (signed-byte-type ,low ,high)))
 
 (defpattern-with-accessors fixnum-type (low high)
-  (make-types-matcher 'fixnum nil `((,low ,MOST-NEGATIVE-FIXNUM)
+  (make-types-matcher ''fixnum nil `((,low ,MOST-NEGATIVE-FIXNUM)
                                     (,high ,MOST-POSITIVE-FIXNUM))))
 (defpattern-with-accessors bignum-type (low high)
-  (make-types-matcher 'bignum nil `((,low *) (,high *))))
+  (make-types-matcher ''bignum nil `((,low *) (,high *))))
 (defpattern-with-accessors integer-type (low high)
-  (make-types-matcher 'integer `((,low *) (,high *))))
+  (make-types-matcher ''integer `((,low *) (,high *))))
 
 (defpattern-with-accessors integer-subtype (low high)
   `(or (mod-type ,low ,high)
@@ -301,20 +301,20 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 ;;;;; float types
 
 (defpattern-with-accessors float-type (low high)
-  (make-types-matcher 'float `((,low *) (,high *))))
+  (make-types-matcher ''float `((,low *) (,high *))))
 
 ;; Note: these lower bound and higher bounds used to be most-negative/positive-X.
 ;; However, this is not a consise definition because floats can represent pos/neg infinity or even NaN,
 ;; so making the bounds the fixed numbers does not sound quite right.
 ;; It also deviates from the standard because the default value of those lows/highs are *.
 (defpattern-with-accessors single-float-type (low high)
-  (make-types-matcher 'single-float `((,low *) (,high *))))
+  (make-types-matcher ''single-float `((,low *) (,high *))))
 (defpattern-with-accessors double-float-type (low high)
-  (make-types-matcher 'double-float `((,low *) (,high *))))
+  (make-types-matcher ''double-float `((,low *) (,high *))))
 (defpattern-with-accessors long-float-type (low high)
-  (make-types-matcher 'long-float `((,low *) (,high *))))
+  (make-types-matcher ''long-float `((,low *) (,high *))))
 (defpattern-with-accessors short-float-type (low high)
-  (make-types-matcher 'short-float `((,low *) (,high *))))
+  (make-types-matcher ''short-float `((,low *) (,high *))))
 (defpattern-with-accessors float-subtype (low high)
   `(or (float-type ,low ,high)
        (short-float-type ,low ,high)
@@ -325,10 +325,10 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 ;;;;; misc real types
 
 (defpattern-with-accessors ratio-type (low high)
-  (make-types-matcher 'ratio nil `((,low *) (,high *))))
+  (make-types-matcher ''ratio nil `((,low *) (,high *))))
 
 (defpattern-with-accessors rational-type (low high)
-  (make-types-matcher 'rational `((,low *) (,high *))))
+  (make-types-matcher ''rational `((,low *) (,high *))))
 
 (defpattern-with-accessors rational-subtype (low high)
   `(or (integer-subtype ,low ,high)
@@ -336,7 +336,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
        (rational-type ,low ,high)))
 
 (defpattern-with-accessors real-type (low high)
-  (make-types-matcher 'real `((,low *) (,high *))))
+  (make-types-matcher ''real `((,low *) (,high *))))
 
 (defpattern-with-accessors real-subtype (low high) 
   `(or (float-subtype ,low ,high)
@@ -345,12 +345,12 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 ;;;;; complex number type
 (defpattern-with-accessors complex-type (element-type)
-  (make-types-matcher 'complex `((,element-type *))))
+  (make-types-matcher ''complex `((,element-type *))))
 
 ;;;; number type
 
 (defpattern-with-accessors number-type ()
-  (make-types-matcher 'number nil))
+  (make-types-matcher ''number nil))
 
 (defpattern-with-accessors number-subtype ()
   `(or (real-subtype)
@@ -368,10 +368,10 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
   `(list 'satisfies ,function))
 
 (defpattern-with-accessors cons-type (car-type cdr-type)
-  (make-types-matcher 'cons `((,car-type *) (,cdr-type *))))
+  (make-types-matcher ''cons `((,car-type *) (,cdr-type *))))
 
 (defpattern-with-accessors null-type ()
-  (make-types-matcher 'null nil))
+  (make-types-matcher ''null nil))
 
 (defpattern-with-accessors list-type ()
-  (make-types-matcher 'list nil))
+  (make-types-matcher ''list nil))
