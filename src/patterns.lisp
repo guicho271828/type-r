@@ -155,6 +155,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 (defpattern-with-accessors base-string-type (size element-type)
   (make-types-matcher ''base-string `((,size *)) `((,element-type base-char))))
+
 (defpattern-with-accessors simple-base-string-type (size element-type)
   (make-types-matcher ''simple-base-string `((,size *)) `((,element-type base-char))))
 
@@ -179,31 +180,35 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 
 ;;;; general
+
+;; note: some X-subtype definitions are replaced with make-types-matcher from the disjuctions of base matchers.
+;; This is to reduce the size of the resulting patterns.
+;; The technique is not applicable to some patterns, and they are noted in the comments.
+
 (defpattern-with-accessors base-string-subtype (size element-type)
-  `(or (base-string-type            ,size ,element-type)
-       (simple-base-string-type     ,size ,element-type)))
+  (make-types-matcher '(or 'base-string 'simple-base-string)
+                      `((,size *)) `((,element-type base-char))))
 
 (defpattern-with-accessors string-subtype (size element-type)
-  `(or (base-string-type        ,size ,element-type)
-       (string-type             ,size ,element-type)
-       (simple-base-string-type ,size ,element-type)
-       (simple-string-type      ,size ,element-type)))
-
-(defpattern-with-accessors vector-subtype (size element-type)
-  `(or (base-string-type        ,size ,element-type)
-       (string-type             ,size ,element-type)
-       (vector-type             ,size ,element-type)
-       (bit-vector-type         ,size ,element-type)
-       (simple-base-string-type ,size ,element-type)
-       (simple-string-type      ,size ,element-type)
-       (simple-vector-type      ,size ,element-type)
-       (simple-bit-vector-type  ,size ,element-type)))
+  `(or (base-string-subtype        ,size ,element-type)
+       ,(make-types-matcher '(or 'string 'simple-string)
+                            `((,size *)) `((,element-type character)))))
 
 (defpattern-with-accessors bit-vector-subtype (size element-type)
-  `(or (bit-vector-type        ,size ,element-type)
-       (simple-bit-vector-type ,size ,element-type)))
+  (make-types-matcher '(or 'bit-vector 'simple-bit-vector)
+                      `((,size *)) `((,element-type bit))))
+
+(defpattern-with-accessors vector-subtype (size element-type)
+  `(or (string-subtype          ,size ,element-type)
+       (bit-vector-subtype      ,size ,element-type)
+       ;; not able to simplify into one make-types-matcher because
+       ;; simple-vector does not take element-type
+       (vector-type             ,size ,element-type)
+       (simple-vector-type      ,size ,element-type)))
 
 (defpattern-with-accessors simple-array-subtype (element-type dimensions)
+  ;; not able to simplify into one make-types-matcher because
+  ;; these have the different default element-type
   `(or (simple-base-string-type ,dimensions ,element-type)
        (simple-string-type      ,dimensions ,element-type)
        (simple-vector-type      ,dimensions ,element-type)
@@ -211,16 +216,9 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
        (simple-array-type       ,element-type ,dimensions)))
 
 (defpattern-with-accessors array-subtype (element-type dimensions) 
-  `(or (base-string-type        ,dimensions ,element-type)
-       (string-type             ,dimensions ,element-type)
-       (vector-type             ,dimensions ,element-type)
-       (bit-vector-type         ,dimensions ,element-type)
-       (array-type              ,element-type ,dimensions)
-       (simple-base-string-type ,dimensions ,element-type)
-       (simple-string-type      ,dimensions ,element-type)
-       (simple-vector-type      ,dimensions ,element-type)
-       (simple-bit-vector-type  ,dimensions ,element-type)
-       (simple-array-type       ,element-type ,dimensions)))
+  `(or (vector-subtype        ,dimensions ,element-type)
+       ,(make-types-matcher '(or 'array 'simple-array)
+                            `((,element-type *) (,dimensions *)))))
 
 ;;;; union. intersection, etc.
 
@@ -234,6 +232,9 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 ;;;; numeric types
 
 ;;;;; integer types
+
+;; make-types-matcher cannot be used for mod as the second argument is mandatory
+;; http://clhs.lisp.se/Body/t_mod.htm
 
 (defpattern-with-accessors mod-type (low high)
   ;; (mod 5) --> high = 4 
