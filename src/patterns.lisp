@@ -318,11 +318,13 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 (defpattern-with-accessors short-float-type (low high)
   (make-types-matcher ''short-float `((,low *) (,high *))))
 (defpattern-with-accessors float-subtype (low high)
-  `(or (float-type ,low ,high)
-       (short-float-type ,low ,high)
-       (single-float-type ,low ,high)
-       (double-float-type ,low ,high)
-       (long-float-type ,low ,high)))
+  (make-types-matcher '(or
+                        'float
+                        'short-float
+                        'single-float
+                        'double-float
+                        'long-float)
+                      `((,low *) (,high *))))
 
 ;;;;; misc real types
 
