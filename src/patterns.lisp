@@ -199,7 +199,7 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
        (simple-vector-type      ,size ,element-type)
        (simple-bit-vector-type  ,size ,element-type)))
 
-(defpattern-with-accessors bitvector-subtype (size element-type)
+(defpattern-with-accessors bit-vector-subtype (size element-type)
   `(or (bit-vector-type        ,size ,element-type)
        (simple-bit-vector-type ,size ,element-type)))
 
