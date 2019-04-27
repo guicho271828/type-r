@@ -5,6 +5,39 @@
 This library provides a parser interface for the built-in compound types
 defined in Common Lisp.
 
+*NEWS (2019/04/14)* : Pattern compilation especially for the large subtypes (e.g. real-subtype)
+are made faster by around x10 by reducing the duplicates in the resulting pattern expansion.
+
+Before ( @e51b424 ):
+
+#+begin_src lisp
+TYPE-R> (time (compile nil '(lambda (x) (trivia:match x ((real-subtype low high) (print low) (print high))))))
+; Evaluation took:
+;   1.155 seconds of real time
+;   1.152000 seconds of total run time (1.148000 user, 0.004000 system)
+;   [ Run times consist of 0.012 seconds GC time, and 1.140 seconds non-GC time. ]
+;   99.74% CPU
+;   37 lambdas converted
+;   2,881,788,828 processor cycles
+;   604,655,024 bytes consed
+#+end_src
+
+After ( @613da14 ):
+
+#+begin_src lisp
+TYPE-R> (time (compile nil '(lambda (x) (trivia:match x ((real-subtype low high) (print low) (print high))))))
+; Evaluation took:
+;   0.175 seconds of real time
+;   0.176000 seconds of total run time (0.172000 user, 0.004000 system)
+;   [ Run times consist of 0.008 seconds GC time, and 0.168 seconds non-GC time. ]
+;   100.57% CPU
+;   22 lambdas converted
+;   437,013,660 processor cycles
+;   62,570,976 bytes consed
+#+end_src
+
+* Introduction
+
 Consider when we have an unknown type specifier. It is easy to determine if
 this type is a subtype of =string= --- just use =subtypep=. Ok, so, is it
 also easy to parse the declared length of this string?
