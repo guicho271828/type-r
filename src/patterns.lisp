@@ -233,21 +233,33 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 ;;;;; integer types
 
+;; [note 2019/04/12] previously all numeric types used to take LOW and HIGH arguments,
+;; however this does not align with the original type specifiers.
+;; Therefore it was renamed to the %-prefixed versions and used later for subtyping.
+
 ;; make-types-matcher cannot be used for mod as the second argument is mandatory
 ;; http://clhs.lisp.se/Body/t_mod.htm
 
-(defpattern-with-accessors mod-type (low high)
+
+
+(defpattern-with-accessors mod-type (n)
+  `(list 'mod ,n))
+(defpattern-with-accessors %mod-type (low high)
   ;; (mod 5) --> high = 4 
   (with-gensyms (n)
     `(and (list 'mod (<> ,high (1- ,n) ,n))
           (<> ,low 0))))
 
-(defpattern-with-accessors bit-type (low high)
+(defpattern-with-accessors bit-type ()
+  (make-types-matcher ''bit nil))
+(defpattern-with-accessors %bit-type (low high)
   `(and 'bit
         (<> ,high 1)
         (<> ,low 0)))
 
-(defpattern-with-accessors unsigned-byte-type (low high)
+(defpattern-with-accessors unsigned-byte-type (bits)
+  (make-types-matcher ''unsigned-byte `((,bits *))))
+(defpattern-with-accessors %unsigned-byte-type (low high)
   (with-gensyms (n)
     `(and (or (list 'unsigned-byte
                     (and (type fixnum)
@@ -257,7 +269,9 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
               (and (list 'unsigned-byte) (<> ,high '*)))
           (<> ,low 0))))
 
-(defpattern-with-accessors signed-byte-type (low high)
+(defpattern-with-accessors signed-byte-type (bits)
+  (make-types-matcher ''signed-byte `((,bits *))))
+(defpattern-with-accessors %signed-byte-type (low high)
   (with-gensyms (n)
     `(or (list 'signed-byte
                (guard1 (,n :type fixnum) (typep ,n 'fixnum)
@@ -275,25 +289,30 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
                  '* (guard ,high t)
                  '* (guard ,low t)))))
 
-(defpattern-with-accessors byte-subtype (low high)
-  `(or (unsigned-byte-type ,low ,high)
-       (signed-byte-type ,low ,high)))
+(defpattern-with-accessors byte-subtype (bits)
+  (make-types-matcher '(or 'unsigned-byte 'signed-byte) `((,bits *))))
 
-(defpattern-with-accessors fixnum-type (low high)
+(defpattern-with-accessors fixnum-type ()
+  (make-types-matcher ''fixnum nil))
+(defpattern-with-accessors %fixnum-type (low high)
   (make-types-matcher ''fixnum nil `((,low ,MOST-NEGATIVE-FIXNUM)
-                                    (,high ,MOST-POSITIVE-FIXNUM))))
-(defpattern-with-accessors bignum-type (low high)
+                                     (,high ,MOST-POSITIVE-FIXNUM))))
+
+(defpattern-with-accessors bignum-type ()
+  (make-types-matcher ''bignum nil))
+(defpattern-with-accessors %bignum-type (low high)
   (make-types-matcher ''bignum nil `((,low *) (,high *))))
+
 (defpattern-with-accessors integer-type (low high)
   (make-types-matcher ''integer `((,low *) (,high *))))
 
 (defpattern-with-accessors integer-subtype (low high)
-  `(or (mod-type ,low ,high)
-       (bit-type ,low ,high)
-       (unsigned-byte-type ,low ,high)
-       (signed-byte-type ,low ,high)
-       (bignum-type ,low ,high)
-       (fixnum-type ,low ,high)
+  `(or (%mod-type ,low ,high)
+       (%bit-type ,low ,high)
+       (%unsigned-byte-type ,low ,high)
+       (%signed-byte-type ,low ,high)
+       (%bignum-type ,low ,high)
+       (%fixnum-type ,low ,high)
        (integer-type ,low ,high)))
 
 (defpattern-with-accessors fixnum-subtype (low high)
