@@ -132,21 +132,50 @@ so on.
 
 ** Number types
 
-Number type /X/ have the corresponding functions /X/-low and /X/-high which
-shows the lower and the upper bound. Oftencases they are the symbol =*=.
+The similar set of functions are provided for numbers.
+The signature follows that of the type specifier signature.
 
 #+BEGIN_SRC lisp
-(fixnum-type-low 'fixnum)                       ; --> most-negative-fixnum
-(unsigned-byte-type-high '(unsigned-byte 5))    ; --> 31
+(mod-type-n '(mod 5))                        ; --> 5
+(bit-type-p 'bit)                            ; --> t
+(bit-type-p '(bit))                          ; --> t
+(unsigned-byte-type-bits '(unsigned-byte 5)) ; --> 5
+(unsigned-byte-type-bits '(unsigned-byte))   ; --> '*
+(unsigned-byte-type-bits 'unsigned-byte)     ; --> '*
+(signed-byte-type-bits 'signed-byte)         ; --> '*
+(byte-subtype-bits '(signed-byte 5))         ; --> 5
+(byte-subtype-bits '(unsigned-byte 5))       ; --> 5
+(fixnum-type-p 'fixnum)                      ; --> t
+(bignum-type-p 'bignum)                      ; --> t
+(integer-type-p 'bignum)                     ; --> nil
+(integer-subtype-p 'bignum)                  ; --> t
+(integer-subtype-low 'bignum)                ; --> '*
+(integer-subtype-high 'bignum)               ; --> '*
+(integer-subtype-high '(unsigned-byte 5))    ; --> 32
+(integer-subtype-high 'fixnum)               ; --> most-positive-fixnum
+(integer-subtype-high '(mod 5))              ; --> 4
+
 (float-type-low 'float)                         ; --> '*
 (single-float-type-low 'single-float)           ; --> '*
 (single-float-type-low '(single-float -1.0 2.0) ; --> 1.0
-(mod-type-low '(mod 5))                         ; --> 0
-(mod-type-high '(mod 5))                        ; --> 4
-#+END_SRC
+(float-subtype-low '(single-float -1.0 2.0)     ; --> 1.0
+(ratio-type-p 'ratio)                           ; --> t
 
-Since these are specific to the single type specifier, we again provide the
-=X-subtype-Y= variants.
+(real-subtype-low 'float)                  ; --> '*
+(real-subtype-low 'single-float)           ; --> '*
+(real-subtype-low '(single-float -1.0 2.0) ; --> 1.0
+(real-subtype-low 'ratio)                  ; --> '*
+(real-subtype-low '(mod 5))                ; --> 0
+(real-subtype-low '(signed-byte 5))        ; --> -32
+(real-subtype-low '(unsigned-byte 5))      ; --> 0
+(real-subtype-low 'fixnum)                 ; --> most-negative-fixnum
+(real-subtype-low 'bignum)                 ; --> '*
+(real-subtype-low '(integer -3 5))         ; --> -3
+
+(complex-type-element-type '(complex (integer -3 5)) ; --> '(integer -3 5)
+(number-subtype-p '(complex (integer -3 5))          ; --> t
+(number-subtype-p '(integer -3 5)                    ; --> t
+#+END_SRC
 
 *List of general pattern names related to numbers*
 
@@ -154,12 +183,9 @@ Since these are specific to the single type specifier, we again provide the
 + integer-subtype --- covers all of =mod,bit,unsigned-byte,signed-byte,bignum,fixnum,integer= type specifiers.
 + fixnum-subtype --- Same as integer-subtype but it matches only when =low,high= are within the fixnum range.
 + float-subtype
++ rational-subtype
 + real-subtype
-+ float-subtype
-
-
-=MOD= type is a subtype of integers, so it is also supported.
-Same for =BIT= type.
++ number-subtype
 
 ** Other types
 
