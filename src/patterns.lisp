@@ -425,3 +425,11 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 
 (defpattern-with-accessors list-type ()
   (make-types-matcher ''list nil))
+
+(defpattern-with-accessors sequence-type ()
+  (make-types-matcher ''sequence nil))
+
+(defpattern-with-accessors sequence-subtype ()
+  `(or (sequence-type)
+       (list-type)
+       (vector-subtype)))
