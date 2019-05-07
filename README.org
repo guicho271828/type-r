@@ -71,7 +71,12 @@ c.f. http://www.lispworks.com/documentation/HyperSpec/Body/04_bc.htm
 | eql          | satisfies    | values             |
 | float        | short-float  | vector             |
 | function     | signed-byte  | bit                |
-| integer      | simple-array |                    |
+| integer      | simple-array | sequence           |
+| fixnum       |              |                    |
+| bignum       |              |                    |
+| ratio        |              |                    |
+| null         |              |                    |
+| list         |              |                    |
 |--------------+--------------+--------------------|
 
 ** Type Accessors
@@ -106,11 +111,13 @@ subtypes.
 *List of general pattern names related to arrays*
 
 + base-string-subtype
++ simple-string-subtype
 + string-subtype
-+ bitvector-subtype
++ bit-vector-subtype
 + vector-subtype
 + simple-array-subtype
 + array-subtype
++ sequence-subtype
 
 For type specifiers that are "/Compound Type Specifier Kind: Specializing./" or
 "/Compound Type Specifier Kind: Abbreviating./" in CLHS, there may be more
