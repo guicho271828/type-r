@@ -100,7 +100,7 @@
   (is-true (subtypep (array-subtype-element-type 'string) 'character))
 
   (is (eql '* (array-subtype-dimensions '(simple-array * *))))
-  (is (eql '* (array-subtype-dimensions 'vector)))
+  (is (equal '(*) (array-subtype-dimensions 'vector)))
   (is (equal '(4 *) (array-subtype-dimensions '(simple-array nil (4 *)))))
   ;; intersection, union -> and,or
   (is (equal '(integer) (or-type-types '(or integer))))
