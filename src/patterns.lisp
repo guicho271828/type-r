@@ -204,7 +204,14 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
        ;; not able to simplify vector-type and simple-vector-type into one make-types-matcher because
        ;; simple-vector does not take element-type
        (vector-type             ,size ,element-type)
-       (simple-vector-type      ,size ,element-type)))
+       (simple-vector-type      ,size ,element-type)
+       ,(make-types-matcher '(or 'array 'simple-array)
+                            `((,element-type *)
+                              ;; this optional clause never matches if the
+                              ;; secondary argument is missing
+                              ((or (list ,size)
+                                   (and 1 (<> ,size '*)))
+                               *)))))
 
 (defpattern-with-accessors simple-array-subtype (element-type dimensions)
   ;; not able to simplify into one make-types-matcher because
