@@ -214,18 +214,27 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
                                *)))))
 
 (defpattern-with-accessors simple-array-subtype (element-type dimensions)
-  ;; not able to simplify into one make-types-matcher because
-  ;; these have the different default element-type
-  `(or (simple-base-string-type ,dimensions ,element-type)
-       (simple-string-type      ,dimensions ,element-type)
-       (simple-vector-type      ,dimensions ,element-type)
-       (simple-bit-vector-type  ,dimensions ,element-type)
-       (simple-array-type       ,element-type ,dimensions)))
+  (with-gensyms (size)
+    `(or (and (or (simple-string-subtype          ,size ,element-type)
+                  (simple-bit-vector-type         ,size ,element-type)
+                  (simple-vector-type             ,size ,element-type))
+              (<> ,dimensions (list ,size)))
+         ;; did not use vector-subtype because its final part of the pattern is superceded by this one and is redundant
+         ,(make-types-matcher ''simple-array
+                              `((,element-type *) (,dimensions *))))))
 
-(defpattern-with-accessors array-subtype (element-type dimensions) 
-  `(or (vector-subtype        ,dimensions ,element-type)
-       ,(make-types-matcher '(or 'array 'simple-array)
-                            `((,element-type *) (,dimensions *)))))
+(defpattern-with-accessors array-subtype (element-type dimensions)
+  (with-gensyms (size)
+    `(or (and (or (string-subtype          ,size ,element-type)
+                  (bit-vector-subtype      ,size ,element-type)
+                  ;; not able to simplify vector-type and simple-vector-type into one make-types-matcher because
+                  ;; simple-vector does not take element-type
+                  (vector-type             ,size ,element-type)
+                  (simple-vector-type      ,size ,element-type))
+              (<> ,dimensions (list ,size)))
+         ;; did not use vector-subtype because its final part of the pattern is superceded by this one and is redundant
+         ,(make-types-matcher '(or 'array 'simple-array)
+                              `((,element-type *) (,dimensions *))))))
 
 ;;;; union. intersection, etc.
 
