@@ -185,14 +185,26 @@ fixed   : (variable default)* --- specifies the types that can be inferred from 
 ;; This is to reduce the size of the resulting patterns.
 ;; The technique is not applicable to some patterns, and they are noted in the comments.
 
+;; base-string
+;; simple-base-string
+;; simple-string
+;; string
+
 (defpattern-with-accessors base-string-subtype (size element-type)
   (make-types-matcher '(or 'base-string 'simple-base-string)
                       `((,size *)) `((,element-type base-char))))
+
+(defpattern-with-accessors simple-string-subtype (size element-type)
+  `(or (simple-base-string-type ,size ,element-type)
+       (simple-string-type      ,size ,element-type)))
 
 (defpattern-with-accessors string-subtype (size element-type)
   `(or (base-string-subtype        ,size ,element-type)
        ,(make-types-matcher '(or 'string 'simple-string)
                             `((,size *)) `((,element-type character)))))
+
+
+
 
 (defpattern-with-accessors bit-vector-subtype (size element-type)
   (make-types-matcher '(or 'bit-vector 'simple-bit-vector)
